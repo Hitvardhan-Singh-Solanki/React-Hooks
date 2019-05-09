@@ -42,3 +42,6 @@ The main hooks covered are:
         As we know we have a very important lifecycle method in the render cycle of react 
         **```ComponentWillUnMount()```**.
         To Achive such functionality we can call a cleanup function and return that from the function called on first argument of the useEffect hook.
+3. useRef
+4. useMemo
+5. useContext
