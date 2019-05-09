@@ -1,10 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import axios from 'axios';
 const FIREBASE_URL = 'https://test-c2f49.firebaseio.com/todos-new.json';
 
+const TodoListReducer = (state, action) => {
+  switch (action.type) {
+    case 'ADD':
+      return state.concat(action.todoItem);
+    case 'SET':
+      return action.todos;
+    case 'REMOVE':
+      return state.filter(todo => todo.id !== action.todoItemId);
+    default:
+      return state;
+  }
+};
+
 export default props => {
   const [todoName, setTodoName] = useState('');
-  const [todoList, setTodoList] = useState([]);
+  const [submittedTodo, setSubmittedTodo] = useState(null);
+  const [todoList, dispatchTodo] = useReducer(TodoListReducer, []);
 
   const inputChangeHandler = event => {
     setTodoName(event.target.value);
@@ -19,7 +33,7 @@ export default props => {
         for (const key in todosObject) {
           todos.push({ id: key, name: todosObject[key].name });
         }
-        setTodoList(todos);
+        dispatchTodo({ type: 'SET', todos });
       } catch (err) {
         console.log(err);
       }
@@ -35,20 +49,22 @@ export default props => {
     );
   };
 
-  useEffect(componentDidMount, [todoName]);
-
-  const addTodo = () => {
-    setTodoList(todoList.concat(todoName));
-    axios
-      .post(FIREBASE_URL, {
-        name: todoName
-      })
-      .then(result => {
-        console.log(result);
-      })
-      .catch(err => {
-        console.log(err);
+  useEffect(componentDidMount, []);
+  useEffect(() => {
+    if (submittedTodo)
+      dispatchTodo({
+        type: 'ADD',
+        todoItem: submittedTodo
       });
+  }, [submittedTodo]);
+
+  const addTodo = async () => {
+    const result = await axios.post(FIREBASE_URL, {
+      name: todoName
+    });
+
+    const todoItem = { id: result.data.name, name: todoName };
+    setSubmittedTodo(todoItem);
   };
 
   return (
