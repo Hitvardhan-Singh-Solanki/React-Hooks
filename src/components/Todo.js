@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer, useRef } from 'react';
 import axios from 'axios';
 import Axios from 'axios';
 
-const FIREBASE_URL = `https://test-c2f49.firebaseio.com/todos-new${''}.json`;
+const FIREBASE_URL = `https://test-c2f49.firebaseio.com/todos-new.json`;
 
 const TodoListReducer = (state, action) => {
   switch (action.type) {
@@ -18,12 +18,8 @@ const TodoListReducer = (state, action) => {
 };
 
 export default props => {
-  const [todoName, setTodoName] = useState('');
   const [todoList, dispatchTodo] = useReducer(TodoListReducer, []);
-
-  const inputChangeHandler = event => {
-    setTodoName(event.target.value);
-  };
+  const todoInputRef = useRef();
 
   const componentDidMount = () => {
     const fetchData = async () => {
@@ -53,6 +49,8 @@ export default props => {
   useEffect(componentDidMount, []);
 
   const addTodo = async () => {
+    const todoName = todoInputRef.current.value;
+
     const result = await axios.post(FIREBASE_URL, {
       name: todoName
     });
@@ -76,12 +74,7 @@ export default props => {
 
   return (
     <React.Fragment>
-      <input
-        type="text"
-        placeholder="Todo"
-        value={todoName}
-        onChange={inputChangeHandler}
-      />
+      <input type="text" placeholder="Todo" ref={todoInputRef} />
       <button type="button" onClick={addTodo}>
         Add Todo
       </button>
