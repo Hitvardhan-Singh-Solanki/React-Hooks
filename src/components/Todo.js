@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useReducer } from 'react';
 import axios from 'axios';
-const FIREBASE_URL = 'https://test-c2f49.firebaseio.com/todos-new.json';
+import Axios from 'axios';
+
+const FIREBASE_URL = `https://test-c2f49.firebaseio.com/todos-new${''}.json`;
 
 const TodoListReducer = (state, action) => {
   switch (action.type) {
@@ -17,7 +19,6 @@ const TodoListReducer = (state, action) => {
 
 export default props => {
   const [todoName, setTodoName] = useState('');
-  const [submittedTodo, setSubmittedTodo] = useState(null);
   const [todoList, dispatchTodo] = useReducer(TodoListReducer, []);
 
   const inputChangeHandler = event => {
@@ -50,13 +51,6 @@ export default props => {
   };
 
   useEffect(componentDidMount, []);
-  useEffect(() => {
-    if (submittedTodo)
-      dispatchTodo({
-        type: 'ADD',
-        todoItem: submittedTodo
-      });
-  }, [submittedTodo]);
 
   const addTodo = async () => {
     const result = await axios.post(FIREBASE_URL, {
@@ -64,7 +58,20 @@ export default props => {
     });
 
     const todoItem = { id: result.data.name, name: todoName };
-    setSubmittedTodo(todoItem);
+    dispatchTodo({ type: 'ADD', todoItem });
+  };
+
+  const removeTodoHandler = async todoItemId => {
+    const URL = `https://test-c2f49.firebaseio.com/todos-new/${todoItemId}.json`;
+    try {
+      await Axios.delete(URL);
+      dispatchTodo({
+        type: 'REMOVE',
+        todoItemId
+      });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -80,7 +87,9 @@ export default props => {
       </button>
       <ul>
         {todoList.map(todo => (
-          <li key={todo.id}>{todo.name}</li>
+          <li key={todo.id} onClick={() => removeTodoHandler(todo.id)}>
+            {todo.name}
+          </li>
         ))}
       </ul>
     </React.Fragment>
