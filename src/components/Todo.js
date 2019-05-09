@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useReducer, useRef, useMemo } from 'react';
 import axios from 'axios';
 import List from './List';
+import { useFormInput } from '../hooks/forms';
 
 const FIREBASE_URL = `https://test-c2f49.firebaseio.com/todos-new.json`;
 
@@ -19,8 +20,7 @@ const TodoListReducer = (state, action) => {
 
 export default props => {
   const [todoList, dispatchTodo] = useReducer(TodoListReducer, []);
-  const todoInputRef = useRef();
-  const [valid, setValid] = useState(false);
+  const todoInput = useFormInput();
 
   const componentDidMount = () => {
     const fetchData = async () => {
@@ -50,7 +50,7 @@ export default props => {
   useEffect(componentDidMount, []);
 
   const addTodo = async () => {
-    const todoName = todoInputRef.current.value;
+    const todoName = todoInput.value;
 
     const result = await axios.post(FIREBASE_URL, {
       name: todoName
@@ -73,19 +73,16 @@ export default props => {
     }
   };
 
-  const inputValidateHandler = event => {
-    if (event.target.value.trim() === '') setValid(false);
-    else setValid(true);
-  };
-
   return (
     <React.Fragment>
       <input
         type="text"
         placeholder="Todo"
-        ref={todoInputRef}
-        onChange={inputValidateHandler}
-        style={{ backgroundColor: valid ? 'transparent' : 'red' }}
+        onChange={todoInput.onChange}
+        value={todoInput.value}
+        style={{
+          backgroundColor: todoInput.validity ? 'transparent' : 'red'
+        }}
       />
       <button type="button" onClick={addTodo}>
         Add Todo
