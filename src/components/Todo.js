@@ -1,6 +1,6 @@
-import React, { useEffect, useReducer, useRef } from 'react';
+import React, { useState, useEffect, useReducer, useRef, useMemo } from 'react';
 import axios from 'axios';
-import Axios from 'axios';
+import List from './List';
 
 const FIREBASE_URL = `https://test-c2f49.firebaseio.com/todos-new.json`;
 
@@ -20,6 +20,7 @@ const TodoListReducer = (state, action) => {
 export default props => {
   const [todoList, dispatchTodo] = useReducer(TodoListReducer, []);
   const todoInputRef = useRef();
+  const [valid, setValid] = useState(false);
 
   const componentDidMount = () => {
     const fetchData = async () => {
@@ -62,7 +63,7 @@ export default props => {
   const removeTodoHandler = async todoItemId => {
     const URL = `https://test-c2f49.firebaseio.com/todos-new/${todoItemId}.json`;
     try {
-      await Axios.delete(URL);
+      await axios.delete(URL);
       dispatchTodo({
         type: 'REMOVE',
         todoItemId
@@ -72,19 +73,29 @@ export default props => {
     }
   };
 
+  const inputValidateHandler = event => {
+    if (event.target.value.trim() === '') setValid(false);
+    else setValid(true);
+  };
+
   return (
     <React.Fragment>
-      <input type="text" placeholder="Todo" ref={todoInputRef} />
+      <input
+        type="text"
+        placeholder="Todo"
+        ref={todoInputRef}
+        onChange={inputValidateHandler}
+        style={{ backgroundColor: valid ? 'transparent' : 'red' }}
+      />
       <button type="button" onClick={addTodo}>
         Add Todo
       </button>
-      <ul>
-        {todoList.map(todo => (
-          <li key={todo.id} onClick={() => removeTodoHandler(todo.id)}>
-            {todo.name}
-          </li>
-        ))}
-      </ul>
+      {useMemo(
+        () => (
+          <List todoList={todoList} removeTodoHandler={removeTodoHandler} />
+        ),
+        [todoList]
+      )}
     </React.Fragment>
   );
 };
