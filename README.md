@@ -45,3 +45,7 @@ The main hooks covered are:
 3. useRef
 4. useMemo
 5. useContext
+6. useReducer
+7. Creating custom hooks
+
+*Updating the readme, stay tuned...*
